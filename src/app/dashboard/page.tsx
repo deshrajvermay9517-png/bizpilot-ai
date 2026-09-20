@@ -42,6 +42,12 @@ function getActionIcon(action: string) {
   return <ChevronRight className="h-4 w-4 text-indigo-400 flex-shrink-0" />;
 }
 
+// Revenue is recognized on paidAt when available. createdAt is kept as a
+// fallback for invoices created before a payment date was recorded.
+function getRevenueDate(invoice: Invoice): Date {
+  return new Date(invoice.paidAt || invoice.createdAt);
+}
+
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const { user, profile } = useAuth();
@@ -111,11 +117,19 @@ export default function DashboardPage() {
   const revenueCollected = isLoading
     ? 0
     : invoices.filter((i) => i.status === 'paid').reduce((sum, i) => sum + i.amount, 0);
+  const revenueReportDate = new Date();
   const thisMonthRevenue = isLoading
     ? 0
-    : invoices
-        .filter((i) => i.status === 'paid' && new Date(i.createdAt).getMonth() === new Date().getMonth())
-        .reduce((sum, i) => sum + i.amount, 0);
+    : invoices.filter((i) => {
+        const revenueDate = getRevenueDate(i);
+
+        return (
+          i.status === 'paid' &&
+          revenueDate.getMonth() === revenueReportDate.getMonth() &&
+          revenueDate.getFullYear() === revenueReportDate.getFullYear()
+        );
+      })
+      .reduce((sum, i) => sum + i.amount, 0);
 
   // Dynamic Revenue Chart Data
   const revenueData = useMemo(() => {
@@ -135,7 +149,7 @@ export default function DashboardPage() {
     // Accumulate total amount from paid invoices in these months
     invoices.forEach((inv) => {
       if (inv.status === 'paid') {
-        const paidDate = new Date(inv.paidAt || inv.createdAt);
+        const paidDate = getRevenueDate(inv);
         const m = paidDate.getMonth();
         const y = paidDate.getFullYear();
         const match = months.find((entry) => entry.monthIndex === m && entry.year === y);
