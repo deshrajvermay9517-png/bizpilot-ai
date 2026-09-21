@@ -9,7 +9,7 @@ import {
   updateAppointment,
   deleteAppointment,
 } from '@/lib/appointments-db';
-import { formatDate, formatTime, getAppointmentStatusColor, getToday } from '@/lib/utils';
+import { formatDate, formatTime, getAppointmentStatusColor, getToday, toLocalDateString } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
@@ -124,8 +124,8 @@ export default function AppointmentsPage() {
   );
 
   const weekDates = useMemo(() => getWeekDates(), []);
-  const weekStart = weekDates[0].toISOString().split('T')[0];
-  const weekEnd = weekDates[6].toISOString().split('T')[0];
+  const weekStart = toLocalDateString(weekDates[0]);
+  const weekEnd = toLocalDateString(weekDates[6]);
 
   const weekCount = useMemo(
     () => appointments.filter((a) => a.date >= weekStart && a.date <= weekEnd && a.status !== 'cancelled').length,
@@ -449,7 +449,7 @@ export default function AppointmentsPage() {
           {/* Header */}
           <div className="grid grid-cols-7 border-b border-slate-200">
             {weekDates.map((date, i) => {
-              const dateStr = date.toISOString().split('T')[0];
+              const dateStr = toLocalDateString(date);
               const isToday = dateStr === today;
               return (
                 <div
@@ -478,7 +478,7 @@ export default function AppointmentsPage() {
           {/* Body */}
           <div className="grid grid-cols-7 min-h-[340px]">
             {weekDates.map((date, i) => {
-              const dateStr = date.toISOString().split('T')[0];
+              const dateStr = toLocalDateString(date);
               const isToday = dateStr === today;
               const dayAppointments = getAppointmentsForDate(dateStr);
               return (

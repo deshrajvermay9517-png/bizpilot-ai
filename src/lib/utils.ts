@@ -115,12 +115,7 @@ export function generateId(): string {
   return Math.random().toString(36).substring(2, 11);
 }
 
-/**
- * Get today's date as ISO string (date only)
- */
-export function getToday(): string {
-  return new Date().toISOString().split('T')[0];
-}
+export { getToday, toLocalDateString } from './local-date';
 
 /**
  * Calculate lead score color
